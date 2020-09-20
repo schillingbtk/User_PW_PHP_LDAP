@@ -1,14 +1,10 @@
 <?php
-
-
 $message = array();
 $message_css = "";
-
 function
 changePassword($user,$oldPassword,$newPassword,$newPasswordCnf){
   global $message;
   global $message_css;
-
   $server = "localhost";
   $dn = "dc=bsp,dc=server,dc=de";
   $rootdn = "cn=nsspam,dc=bsp,dc=server,dc=de";
@@ -17,7 +13,6 @@ changePassword($user,$oldPassword,$newPassword,$newPasswordCnf){
   ldap_connect($server);
   $con = ldap_connect($server);
   ldap_set_option($con, LDAP_OPT_PROTOCOL_VERSION, 3);
-
   // bind
   $ldapBind = ldap_bind($con,$user,$oldPassword); 
   $user_search = ldap_search($con,$dn,"(uid=$user)");
@@ -34,13 +29,11 @@ ldap_search($con,$user_dn,$user_search_filter,$user_search_arry);
   $user_get_opt = ldap_get_entries($con, $user_search_opt);
   $passwordRetryCount = $user_get_opt[0]["passwordRetryCount"][0];
   $passwordhistory = $user_get_opt[0]["passwordhistory"][0];
-
   $message[] = "Username: " . $user_id;
   /* Produktiv ausblenden */
   $message[] = "DN: " . $user_dn;
   $message[] = "altes Passwort: " . $oldPassword;
   $message[] = "neues Passwort: " . $newPassword;
-
   /* Start */
   if ( $passwordRetryCount == 3 ) {
     $message[] = "Error E101 - Userkonto gesperrt!";
@@ -54,12 +47,9 @@ ldap_search($con,$user_dn,$user_search_filter,$user_search_arry);
     $message[] = "Error E102 - Passwort stimmt nicht ueberein!";
     return false;
   }
-
   $salt = openssl_random_pseudo_bytes(12);
   $encoded_newPassword = "{SSHA}" . base64_encode( hash('sha1',
 $newPassword . $salt, true ) . $salt );
-
-  
   if (strlen($newPassword) < 8 ) {
     $message[] = "Error E103 - Passwort zu kurz.";
     return false;
@@ -88,20 +78,15 @@ $newPassword . $salt, true ) . $salt );
     $message[] = "Error E111 - Nicht gleiches Passwort verwenden.";
     return false;
   }
- 
-
   if (!$user_get) {
     $message[] = "Error E200 - Nichts wurde geaendert.";
     return false;
   }
-
   $auth_entry = ldap_first_entry($con, $user_search);
   $mail_addresses = ldap_get_values($con, $auth_entry, "mail");
   $given_names = ldap_get_values($con, $auth_entry, "givenName");
-  
   $mail_address = $mail_addresses[0];
   $first_name = $given_names[0];
-
   /* Aenderung schreiben */
   $entry = array();
   $entry["userPassword"] = "$encoded_newPassword";
@@ -116,7 +101,6 @@ $X = ldap_bind($con,$rootdn,$rootpwd);
  $message[] = "Passwort erfolgreich geändert";
   }
 }
-
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -146,7 +130,6 @@ verwendet werden.<br/>
 <br/></p>
 <?php
       if (isset($_POST["submitted"])) {
-       
 changePassword($_POST['username'],$_POST['oldPassword'],$_POST['newPassword1'],$_POST['newPassword2']);
         global $message_css;
         if ($message_css == "yes") {
